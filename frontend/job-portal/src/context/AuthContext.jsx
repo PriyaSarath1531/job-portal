@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useState, useEffect} from "react" ;
+import React, { createContext, useContext, useState, useEffect } from "react";
+
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
@@ -9,45 +10,44 @@ export const AuthProvider = ({ children }) => {
     useEffect(() => {
         checkAuthStatus();
     }, []);
-    const checkAuthStatus = async()=>{
-        try{
+
+    const checkAuthStatus = async () => {
+        try {
             const token = localStorage.getItem("token");
             const userStr = localStorage.getItem("user");
-            if(token && userStr){
+            if (token && userStr) {
                 const userData = JSON.parse(userStr);
                 setUser(userData);
                 setIsAuthenticated(true);
             }
-        }catch(error){
+        } catch (error) {
             console.error("Auth check failed:", error);
             logout();
-
-        }finally{
+        } finally {
             setLoading(false);
         }
-
     };
 
     const login = (userData, token) => {
         setUser(userData);
         localStorage.setItem("token", token);
         localStorage.setItem("user", JSON.stringify(userData));
-        setIsAuthenticated
+        setIsAuthenticated(true);
     };
 
     const logout = () => {
         setUser(null);
         localStorage.removeItem("user");
         localStorage.removeItem("token");
-        localStorage.removeItem("refreshToken");
         setIsAuthenticated(false);
-        winndow.location.href = "/";
+        // Do not redirect here to avoid potential loops if called during initialization
     };
+
     const updateUser = (updatedUserData) => {
-        setUser(updatedUserData);
         const newUserData = { ...user, ...updatedUserData };
+        setUser(newUserData);
         localStorage.setItem("user", JSON.stringify(newUserData));
-    }
+    };
 
     const value = {
         user,
@@ -59,18 +59,17 @@ export const AuthProvider = ({ children }) => {
         updateUser
     };
 
-
     return (
-        <AuthContext.Provider value={{ user, login, logout, loading }}>
+        <AuthContext.Provider value={value}>
             {!loading && children}
         </AuthContext.Provider>
     );
 };
 
 export const useAuth = () => {
-    return useContext(AuthContext);
-    if(!context){
+    const context = useContext(AuthContext);
+    if (!context) {
         throw new Error("useAuth must be used within an AuthProvider");
     }
-    return context ;
+    return context;
 };

@@ -1,32 +1,42 @@
-export const BASE_URL = "http://localhost:8000";
+export const BASE_URL = "http://localhost:5000";
 
 export const API_PATHS = {
-    // Auth
-    Auth:{
-        REGISTER: '/auth/register',
-        LOGIN: '/auth/login',
-        GET_PROFILE: '/auth/profile',
-        UPDATE_PROFILE: '/auth/update-profile',
-        DELETE_RESUME: '/auth/delete-resume',
+    AUTH: {
+        LOGIN: "/api/auth/login",
+        REGISTER: "/api/auth/register",
+        GET_ME: "/api/auth/me",
+        UPLOAD_IMAGE: "/api/auth/upload-image",
     },
-    DASHBOARD :{
-        OVERVIEW : '/api/analytics/overview',
+    IMAGE: {
+        UPLOAD_IMAGE: "/api/auth/upload-image",
     },
-    // Jobs
+    USER: {
+        UPDATE_PROFILE: "/api/user/profile",
+        DELETE_RESUME: "/api/user/resume",
+        GET_PUBLIC_PROFILE: (userId) => `/api/user/public/${userId}`,
+    },
     JOBS: {
-        GET_ALL_JOBS: '/api/jobs',
-        GET_JOB_BY_ID: (id) => `/api/jobs/${id}`,
-        POST_JOB: '/api/jobs',
-        GET_JOBS_EMPLOYER: '/api/jobs/get-jobs-employer',
-        GET_JOB_BY_ID: (id) => `/api/jobs/${id}`,
-        UPDATE_JOB: (id) => `/api/jobs/${id}`,
-        DELETE_JOB: (id) => `/api/jobs/${id}`,
-        DELETE_JOB: (id) => `/api/jobs/${id}`,
+        CREATE: "/api/jobs",
+        GET_ALL: "/api/jobs",
+        GET_BY_ID: (id) => `/api/jobs/${id}`,
+        UPDATE: (id) => `/api/jobs/${id}`,
+        DELETE: (id) => `/api/jobs/${id}`,
         TOGGLE_CLOSE: (id) => `/api/jobs/${id}/toggle-close`,
-        
-        SAVE_JOB:(id) => `/api/save-jobs/${id}`,
-        UNSAVE_JOB: (id) => `/api/save-jobs/${id}`,
-        GET_SAVED_JOBS: '/api/save-jobs/my',
-
+        GET_EMPLOYER_JOBS: "/api/jobs/get-jobs-employer",
+    },
+    APPLICATIONS: {
+        APPLY: (jobId) => `/api/applications/${jobId}`,
+        GET_MY: "/api/applications/my",
+        GET_BY_JOB: (jobId) => `/api/applications/job/${jobId}`,
+        GET_BY_ID: (id) => `/api/applications/${id}`,
+        UPDATE_STATUS: (id) => `/api/applications/${id}/status`,
+    },
+    SAVED_JOBS: {
+        SAVE: (jobId) => `/api/save-jobs/${jobId}`,
+        GET_MY: "/api/save-jobs/my",
+        UNSAVE: (jobId) => `/api/save-jobs/${jobId}`,
+    },
+    ANALYTICS: {
+        OVERVIEW: "/app/analytics/overview",
     }
 };
