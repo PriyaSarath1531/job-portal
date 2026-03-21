@@ -1,24 +1,49 @@
 const Application = require("../models/Application");
 const Job = require("../models/Job");
 
-exports.applyToJob = async(req, res) => {
-    try{
-        if(req.user.role !== "jobseeker"){
-            return res.status(403).json({message: "Only job seekers can apply to jobs"});
-        }
-        const existing = await Application.findOne({job: req.params.jobId, applicant: req.user._id});
-        if(existing){
-            return res.status(400).json({message: "You have already applied to this job"});
-        }
-        const application = await Application.create({...req.body, job: req.params.jobId, applicant: req.user._id,
-            resume: req.user.resume ,
-        });
-        res.status(201).json(application);
-
-    }catch(err){
-        res.status(500).json({message: err.message});
+exports.applyToJob = async (req, res) => {
+  try {
+    if (req.user.role !== "jobseeker") {
+      return res
+        .status(403)
+        .json({ message: "Only job seekers can apply to jobs" });
     }
 
+    const existing = await Application.findOne({
+      job: req.params.jobId,
+      applicant: req.user._id
+    });
+
+    if (existing) {
+      return res
+        .status(400)
+        .json({ message: "You have already applied to this job" });
+    }
+
+    // ✅ ADD THIS (IP address)
+    const ipAddress =
+      req.headers["x-forwarded-for"] ||
+      req.socket.remoteAddress;
+
+    // ✅ ADD THIS (device info from frontend)
+    const { deviceInfo } = req.body;
+
+    const application = await Application.create({
+      ...req.body,
+      job: req.params.jobId,
+      applicant: req.user._id,
+      resume: req.user.resume,
+
+      // ✅ ADD THESE TWO LINES
+      ipAddress: ipAddress,
+      deviceInfo: deviceInfo
+    });
+
+    res.status(201).json(application);
+
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
 };
 exports.getMyApplications = async(req,res) =>{
     try{
