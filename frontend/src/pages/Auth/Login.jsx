@@ -4,32 +4,29 @@ import { useAuth } from '../../context/AuthContext';
 import axiosInstance from '../../utils/axiosinstance';
 import { API_PATHS } from '../../utils/apipaths';
 import toast from 'react-hot-toast';
-import { Mail, Lock, Briefcase, ArrowRight } from 'lucide-react';
+import { Mail, Lock, Briefcase, ArrowRight, Camera } from 'lucide-react';
+import FaceAuth from '../../components/Auth/FaceAuth';
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showFaceAuth, setShowFaceAuth] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    try {
-      const { data } = await axiosInstance.post(API_PATHS.AUTH.LOGIN, { email, password });
-      login(data, data.token);
-      toast.success('Successfully logged in!');
-      if (data.role === 'employer') {
-        navigate('/employer-dashboard');
-      } else {
-        navigate('/dashboard');
-      }
-    } catch (error) {
-      toast.error(error.response?.data?.message || 'Login failed');
-    } finally {
-      setLoading(false);
+  const handleFaceAuthSuccess = (data) => {
+    login(data, data.token);
+    toast.success('Successfully logged in with face recognition!');
+    navigate('/dashboard');
+  };
+
+  const handleFaceLoginClick = () => {
+    if (!email) {
+      toast.error('Please enter your email first');
+      return;
     }
+    setShowFaceAuth(true);
   };
 
   return (
@@ -118,6 +115,41 @@ const Login = () => {
             )}
           </button>
         </form>
+
+        <p className="text-center text-sm text-gray-500">
+          Don't have an account?{' '}
+          <Link to="/signup" className="font-bold text-indigo-600 hover:text-indigo-500 transition-colors">
+            Sign up for free
+          </Link>
+        </p>
+      </div>
+    </div>
+  );
+};
+
+export default Login;
+xs uppercase">
+              <span className="bg-white px-4 text-gray-400 font-bold">Or continue with</span>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={handleFaceLoginClick}
+            className="w-full flex justify-center items-center py-3.5 px-4 border-2 border-indigo-50 text-indigo-600 font-bold rounded-xl hover:bg-indigo-50 transition-all active:scale-[0.98]"
+          >
+            <Camera className="mr-2 w-5 h-5" /> Sign in with Face
+          </button>
+        </form>
+
+        {showFaceAuth && (
+          <FaceAuth 
+            mode="login" 
+            email={email} 
+            onSuccess={handleFaceAuthSuccess} 
+            onClose={() => setShowFaceAuth(false)} 
+          />
+        )}
 
         <p className="text-center text-sm text-gray-500">
           Don't have an account?{' '}

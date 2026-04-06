@@ -25,6 +25,17 @@ const userSchema = new mongoose.Schema({
   companyName: String,
   companyDescription: String,
   companyLogo: String,
+  isVerified: { type: Boolean, default: false },
+  trustScore: { type: Number, default: 50 },
+  accountStatus: { type: String, enum: ['active', 'suspended', 'under_review'], default: 'active' },
+  flags: [{
+    reason: String,
+    timestamp: { type: Date, default: Date.now }
+  }],
+  faceDescriptor: {
+    type: [Number],
+    default: undefined
+  }
 }, { timestamps: true });
 //encrypt password before saving
 userSchema.pre("save", async function (next) {

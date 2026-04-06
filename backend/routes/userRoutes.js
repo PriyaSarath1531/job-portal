@@ -4,11 +4,13 @@ const express = require('express');
 const {
     updateProfile,
     deleteResume,
-    getPublicProfile
+    getPublicProfile,
+    verifyProfile
 } = require('../controller/userController');
 const { protect } = require('../middlewares/authMiddleware');
 const router = express.Router();    
 router.put('/profile', protect, updateProfile);
 router.delete('/resume', protect, deleteResume);
 router.get('/public/:userId', getPublicProfile);
+router.post('/verify', protect, verifyProfile);
 module.exports = router;

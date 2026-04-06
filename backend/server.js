@@ -9,6 +9,7 @@ const jobRoutes = require("./routes/jobRoutes");
 const applicationRoutes = require("./routes/applicationRoutes");
 const savedJobRoutes = require("./routes/savedJobRoutes");
 const analyticsRoutes = require("./routes/analyticsRoutes");
+const reportRoutes = require("./routes/reportRoutes");
 const app = express();
 app.use(cors({
     origin: "*",
@@ -23,6 +24,7 @@ app.use("/api/user", userRoutes);
 app.use("/api/applications", applicationRoutes);
 app.use("/api/jobs", jobRoutes);
 app.use("/api/save-jobs", savedJobRoutes);
+app.use("/api/reports", reportRoutes);
 app.use('/app/analytics', analyticsRoutes);
 
 // Serve uploads folder

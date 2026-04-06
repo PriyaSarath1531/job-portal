@@ -80,6 +80,9 @@ const JobDetails = () => {
                   <div className="flex items-center mt-2 text-gray-500 font-medium">
                     <Building2 className="w-5 h-5 mr-2 text-indigo-500" />
                     {job.company?.companyName}
+                    {(job.company?.isVerified || job.company?.trustScore > 80) && (
+                      <ShieldCheck className="w-5 h-5 text-emerald-500 ml-2" title="Verified Employer" />
+                    )}
                   </div>
                 </div>
               </div>
@@ -146,6 +149,15 @@ const JobDetails = () => {
                 {job.company?.companyDescription || 'No description available for this company.'}
               </p>
             </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default JobDetails;
+           </div>
           </div>
         </div>
       </div>

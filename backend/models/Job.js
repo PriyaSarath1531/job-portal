@@ -14,6 +14,11 @@ const jobSchema = new mongoose.Schema(
         salaryMin : {type: Number},
         salaryMax : {type: Number},
         isClosed: {type: Boolean, default : false},
+        isFlagged: {type: Boolean, default: false},
+        flags: [{
+            reason: String,
+            timestamp: { type: Date, default: Date.now }
+        }],
     }, { timestamps: true }
 );
 

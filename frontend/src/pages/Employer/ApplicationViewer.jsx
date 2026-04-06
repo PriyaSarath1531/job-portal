@@ -70,7 +70,12 @@ const ApplicationViewer = () => {
                     )}
                   </div>
                   <div>
-                    <h3 className="text-lg font-bold text-gray-900">{app.applicant?.name}</h3>
+                    <h3 className="text-lg font-bold text-gray-900 flex items-center">
+                      {app.applicant?.name}
+                      {(app.applicant?.isVerified || app.applicant?.trustScore > 80) && (
+                        <ShieldCheck className="w-4 h-4 text-emerald-500 ml-1.5" title="Verified Candidate" />
+                      )}
+                    </h3>
                     <div className="flex items-center text-sm text-gray-500 font-medium">
                       <Mail className="w-4 h-4 mr-1.5 text-gray-400" />
                       {app.applicant?.email}
@@ -129,6 +134,14 @@ const ApplicationViewer = () => {
             <h3 className="text-xl font-bold text-gray-900">No applicants yet</h3>
             <p className="text-gray-500 mt-2">Check back later for new applications</p>
           </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default ApplicationViewer;
+ </div>
         )}
       </div>
     </div>

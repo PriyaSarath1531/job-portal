@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { MapPin, Briefcase, Clock, DollarSign, Bookmark, BookmarkCheck } from 'lucide-react';
+import { MapPin, Briefcase, Clock, DollarSign, Bookmark, BookmarkCheck, ShieldCheck } from 'lucide-react';
 import moment from 'moment';
 
 const JobCard = ({ job, isSaved, onToggleSave }) => {
@@ -19,7 +19,12 @@ const JobCard = ({ job, isSaved, onToggleSave }) => {
             <h3 className="text-lg font-bold text-gray-900 group-hover:text-indigo-600 transition-colors">
               <Link to={`/job/${job._id}`}>{job.title}</Link>
             </h3>
-            <p className="text-sm text-gray-500 font-medium">{job.company?.companyName}</p>
+            <div className="flex items-center text-sm text-gray-500 font-medium">
+              {job.company?.companyName}
+              {(job.company?.isVerified || job.company?.trustScore > 80) && (
+                <ShieldCheck className="w-4 h-4 text-emerald-500 ml-1" title="Verified Employer" />
+              )}
+            </div>
           </div>
         </div>
         <button

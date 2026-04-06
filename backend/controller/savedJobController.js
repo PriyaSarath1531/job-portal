@@ -1,11 +1,10 @@
-    
+const SavedJob = require("../models/SavedJob");
 
-
-exports.saveJob =  async(req, res) => {
-    try{
+exports.saveJob = async (req, res) => {
+    try {
         const { jobId } = req.params;
         const userId = req.user._id;
-        
+
         if (req.user.role !== "jobseeker") {
             return res.status(403).json({ message: "Only job seekers can save jobs" });
         }
@@ -17,12 +16,12 @@ exports.saveJob =  async(req, res) => {
 
         const savedJob = await SavedJob.create({ user: userId, job: jobId });
         res.status(201).json(savedJob);
-    }catch(err){
+    } catch (err) {
         res.status(500).json({ message: err.message });
     }
 };
- 
-exports.unSavedJob = async(req,res) =>{
+
+exports.unSavedJob = async (req, res) => {
     try {
         const { jobId } = req.params;
         const userId = req.user._id;
