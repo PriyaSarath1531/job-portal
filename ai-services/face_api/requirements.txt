@@ -1,0 +1,8 @@
+fastapi==0.115.11
+uvicorn[standard]==0.34.0
+numpy==2.2.4
+opencv-python==4.11.0.86
+pillow==11.1.0
+# NOTE: face_recognition depends on dlib and can be difficult on Windows.
+# If installation fails, consider running this service in Docker/Linux.
+face-recognition==1.3.0

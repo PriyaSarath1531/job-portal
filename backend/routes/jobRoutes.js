@@ -9,7 +9,7 @@ const {
     getJobEmployer,
     
 } = require("../controller/jobController");
-const { protect } = require("../middleware/authMiddleware");
+const { protect } = require("../middlewares/authMiddleware");
 const router = express.Router();
 router.route("/").post(protect, createJob).get(getJobs);
 router.route("/get-jobs-employer").get(protect, getJobEmployer);

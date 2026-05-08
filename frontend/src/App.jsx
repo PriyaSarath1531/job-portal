@@ -24,6 +24,7 @@ import ManageJobs from './pages/Employer/ManageJobs';
 import ApplicationViewer from './pages/Employer/ApplicationViewer';
 import EmployerProfilePage from './pages/Employer/EmployerProfilePage';
 import EditProfileDetails from './pages/Employer/EditProfileDetails';
+import FlaggedProfiles from './pages/Admin/FlaggedProfiles';
 
 const App = () => {
   return (
@@ -51,6 +52,11 @@ const App = () => {
             <Route path="/applicants/:jobId" element={<ApplicationViewer />} />
             <Route path="/company-profile" element={<EmployerProfilePage />} />
             <Route path="/edit-profile" element={<EditProfileDetails />} />
+          </Route>
+
+          {/* Admin (email allowlist) */}
+          <Route element={<ProtectedRoute />}>
+            <Route path="/admin/flagged-profiles" element={<FlaggedProfiles />} />
           </Route>
 
           {/* Catch-all */}

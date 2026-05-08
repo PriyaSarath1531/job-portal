@@ -1,4 +1,4 @@
-export const BASE_URL = "http://localhost:5000";
+export const BASE_URL = "http://localhost:8000";
 
 export const API_PATHS = {
     AUTH: {
@@ -7,7 +7,11 @@ export const API_PATHS = {
         GET_ME: "/api/auth/me",
         UPLOAD_IMAGE: "/api/auth/upload-image",
         FACE_LOGIN: "/api/auth/face-login",
+        CHECK_STATUS: "/api/auth/check-status",
         REGISTER_FACE: "/api/auth/register-face",
+        VERIFY_FACE: "/api/auth/verify-face",
+        SEND_OTP: "/api/auth/send-otp",
+        VERIFY_OTP: "/api/auth/verify-otp",
     },
     IMAGE: {
         UPLOAD_IMAGE: "/api/auth/upload-image",
@@ -40,5 +44,13 @@ export const API_PATHS = {
     },
     ANALYTICS: {
         OVERVIEW: "/app/analytics/overview",
-    }
+    },
+    ADMIN: {
+        FLAGGED_PROFILES: "/api/admin/flagged-profiles",
+        APPROVE_PROFILE: (userId) => `/api/admin/profiles/${userId}/approve`,
+        REJECT_PROFILE: (userId) => `/api/admin/profiles/${userId}/reject`,
+    },
+    AI: {
+        EVALUATE_ME: "/api/ai/evaluate-me",
+    },
 };

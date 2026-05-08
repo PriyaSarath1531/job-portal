@@ -5,7 +5,7 @@ import { useAuth } from '../../context/AuthContext';
 import JobCard from '../../components/Cards/JobCard';
 import Header from '../LandingPage/components/Header';
 import toast from 'react-hot-toast';
-import { Search, MapPin, Filter, X } from 'lucide-react';
+import { Search, MapPin, Filter, X, ShieldCheck, ShieldAlert, ShieldX, Briefcase } from 'lucide-react';
 
 const JobSeekerDashboard = () => {
   const { user } = useAuth();
@@ -33,7 +33,7 @@ const JobSeekerDashboard = () => {
   };
 
   useEffect(() => {
-    fetchJobs();
+    if (user) fetchJobs();
   }, [user]);
 
   const handleSearch = (e) => {
@@ -57,10 +57,64 @@ const JobSeekerDashboard = () => {
     }
   };
 
+  if (user?.accountStatus === 'suspended' || user?.verificationStatus === 'fake') {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4 pt-20">
+        <Header />
+        <div className="max-w-md w-full text-center space-y-6 bg-white p-8 rounded-2xl shadow-xl border border-gray-100">
+          <div className="inline-flex p-4 bg-rose-50 rounded-2xl text-rose-600">
+            <ShieldX className="w-12 h-12" />
+          </div>
+          <h2 className="text-3xl font-extrabold text-gray-900">Account Blocked</h2>
+          <p className="text-gray-500">
+            Our AI system has detected inconsistencies in your profile. Your account is currently suspended for security reasons.
+          </p>
+          <button 
+            onClick={() => window.location.href = 'mailto:support@jobportal.com'}
+            className="w-full py-3 bg-gray-900 text-white rounded-xl font-bold hover:bg-gray-800 transition-all"
+          >
+            Contact Support
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 pt-20">
       <Header />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        
+        {/* Verification Status Banner */}
+        <div className={`mb-8 p-4 rounded-2xl border flex items-center justify-between ${
+          user?.verificationStatus === 'genuine' 
+          ? 'bg-emerald-50 border-emerald-100 text-emerald-800' 
+          : 'bg-amber-50 border-amber-100 text-amber-800'
+        }`}>
+          <div className="flex items-center space-x-3">
+            {user?.verificationStatus === 'genuine' ? (
+              <ShieldCheck className="w-6 h-6 text-emerald-600" />
+            ) : (
+              <ShieldAlert className="w-6 h-6 text-amber-600" />
+            )}
+            <div>
+              <p className="font-bold text-sm">
+                Profile Status: {user?.verificationStatus === 'genuine' ? 'Verified (Genuine)' : 'Under Review (Suspicious)'}
+              </p>
+              <p className="text-xs opacity-80">
+                {user?.verificationStatus === 'genuine' 
+                  ? 'Your profile is verified. You have full access to all features.' 
+                  : 'Your profile is under manual verification. Some features like "Apply" might be restricted.'}
+              </p>
+            </div>
+          </div>
+          {user?.verificationStatus === 'genuine' && (
+            <div className="px-3 py-1 bg-white/50 rounded-lg text-xs font-bold border border-emerald-200">
+              Trust Score: {user?.trustScore}%
+            </div>
+          )}
+        </div>
+
         <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 mb-8">
           <form onSubmit={handleSearch} className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div className="relative">

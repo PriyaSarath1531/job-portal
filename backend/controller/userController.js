@@ -1,22 +1,63 @@
 const fs = require('fs');
 const path = require('path');
-const User = require("../models/User");
+const User = require("../models/user");
+const { postJson } = require("../utils/pythonClient");
+const { buildMlPayload } = require("../utils/profileFeatures");
 exports.updateProfile = async (req, res) => {
     try {
-        const { name, avatar, companyName, companyDescription, companyLogo, resume } = req.body;
+        const { name, avatar, companyName, companyDescription, companyLogo, resume, phone, education, skills, experienceYears } = req.body;
         const user = await User.findById(req.user._id);
         if (!user) {
             return res.status(404).json({ message: "User not found" });
         }       
         user.name = name || user.name;
-        user.resume = resume || user.resume;
+        
+        if (resume) {
+            if (!resume.toLowerCase().endsWith('.pdf')) {
+                return res.status(400).json({ message: "Only PDF resumes are allowed" });
+            }
+            user.resume = resume;
+        }
+
         user.avatar = avatar || user.avatar;
+        user.phone = phone ?? user.phone;
+        if (Array.isArray(education)) user.education = education;
+        if (Array.isArray(skills)) user.skills = skills;
+        if (experienceYears !== undefined) user.experienceYears = Number(experienceYears);
         if (user.role === 'employer') {
             user.companyName = companyName || user.companyName;
             user.companyDescription = companyDescription || user.companyDescription;  
             user.companyLogo = companyLogo || user.companyLogo;
         }
         await user.save();
+
+        // Auto-evaluate job seeker profiles after updates (best-effort)
+        if (user.role === "jobseeker") {
+            try {
+                const mlApiUrl = (process.env.ML_API_URL || "http://localhost:7002").replace(/\/$/, "");
+                const payload = await buildMlPayload(user);
+                const result = await postJson(`${mlApiUrl}/predict`, { profile: payload });
+
+                const cls = Number(result.classification);
+                user.verificationConfidence = Number(result.confidence || 0);
+                user.verificationReasons = Array.isArray(result.reasons) ? result.reasons : [];
+
+                if (cls === 0) {
+                    user.verificationStatus = "genuine";
+                } else if (cls === 1) {
+                    user.verificationStatus = "suspicious";
+                    user.accountStatus = "under_review";
+                } else {
+                    user.verificationStatus = "fake";
+                    user.accountStatus = "suspended";
+                }
+                await user.save();
+            } catch (e) {
+                // Swallow ML errors to avoid blocking profile update if ML service is down.
+                console.warn("ML evaluation failed:", e.message || e);
+            }
+        }
+
         res.json({
             _id: user._id,
             name: user.name,
@@ -26,6 +67,11 @@ exports.updateProfile = async (req, res) => {
             companyDescription: user.companyDescription,
             companyLogo: user.companyLogo,
             resume: user.resume || '',
+            trustScore: user.trustScore,
+            accountStatus: user.accountStatus,
+            verificationStatus: user.verificationStatus,
+            verificationConfidence: user.verificationConfidence,
+            verificationReasons: user.verificationReasons,
         });
     }catch (error) {
         console.error(error);

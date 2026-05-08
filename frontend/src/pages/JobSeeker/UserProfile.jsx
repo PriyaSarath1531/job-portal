@@ -15,20 +15,36 @@ const UserProfile = () => {
     name: user?.name || '',
     avatar: user?.avatar || '',
     resume: user?.resume || '',
+    education: user?.education?.join(', ') || '',
+    skills: user?.skills?.join(', ') || '',
+    experienceYears: user?.experienceYears || 0,
   });
 
   const handleFileChange = async (e, type) => {
     const file = e.target.files[0];
     if (!file) return;
 
+    if (type === 'resume' && file.type !== 'application/pdf') {
+      toast.error('Only PDF resumes are allowed');
+      return;
+    }
+
     setLoading(true);
     try {
       const { imageUrl } = await uploadImage(file);
       const updatedData = { ...formData, [type]: imageUrl };
+      
+      // Convert education and skills back to arrays if they are strings
+      const payload = {
+          ...updatedData,
+          education: typeof updatedData.education === 'string' ? updatedData.education.split(',').map(s => s.trim()).filter(Boolean) : updatedData.education,
+          skills: typeof updatedData.skills === 'string' ? updatedData.skills.split(',').map(s => s.trim()).filter(Boolean) : updatedData.skills,
+      };
+
       setFormData(updatedData);
       
       // Auto-save the change to the profile
-      const { data } = await axiosInstance.put(API_PATHS.USER.UPDATE_PROFILE, updatedData);
+      const { data } = await axiosInstance.put(API_PATHS.USER.UPDATE_PROFILE, payload);
       updateUser(data);
       toast.success(`${type.charAt(0).toUpperCase() + type.slice(1)} updated!`);
     } catch (error) {
@@ -42,7 +58,13 @@ const UserProfile = () => {
     e.preventDefault();
     setLoading(true);
     try {
-      const { data } = await axiosInstance.put(API_PATHS.USER.UPDATE_PROFILE, formData);
+      const payload = {
+          ...formData,
+          education: formData.education.split(',').map(s => s.trim()).filter(Boolean),
+          skills: formData.skills.split(',').map(s => s.trim()).filter(Boolean),
+          experienceYears: Number(formData.experienceYears)
+      };
+      const { data } = await axiosInstance.put(API_PATHS.USER.UPDATE_PROFILE, payload);
       updateUser(data);
       setEditing(false);
       toast.success('Profile updated successfully!');
@@ -65,6 +87,21 @@ const UserProfile = () => {
     }
   };
 
+  const completionPct = () => {
+    const fields = [
+      Boolean(user?.name),
+      Boolean(user?.email),
+      Boolean(user?.phone),
+      Boolean(user?.avatar),
+      Boolean(user?.resume),
+      Array.isArray(user?.education) && user.education.length > 0,
+      Array.isArray(user?.skills) && user.skills.length > 0,
+      Number(user?.experienceYears || 0) > 0,
+      Array.isArray(user?.faceEmbeddings) && user.faceEmbeddings.length > 0,
+    ];
+    return Math.round((fields.filter(Boolean).length / fields.length) * 100);
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 pt-20">
       <Header />
@@ -73,8 +110,8 @@ const UserProfile = () => {
           <div className="h-32 bg-indigo-600 relative">
             <div className="absolute -bottom-12 left-8 group">
               <div className="w-24 h-24 rounded-2xl bg-white p-1 shadow-lg border border-gray-100 relative overflow-hidden">
-                {formData.avatar ? (
-                  <img src={formData.avatar} alt={user?.name} className="w-full h-full object-cover rounded-xl" />
+                {user?.avatar ? (
+                  <img src={user?.avatar} alt={user?.name} className="w-full h-full object-cover rounded-xl" />
                 ) : (
                   <div className="w-full h-full bg-indigo-50 flex items-center justify-center text-indigo-600">
                     <User className="w-10 h-10" />
@@ -110,9 +147,40 @@ const UserProfile = () => {
                   <label className="block text-sm font-bold text-gray-700 mb-1">Full Name</label>
                   <input
                     type="text"
+                    required
                     className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all text-sm bg-gray-50/50"
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-bold text-gray-700 mb-1">Education (comma separated)</label>
+                  <input
+                    type="text"
+                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all text-sm bg-gray-50/50"
+                    placeholder="B.Tech, M.S., etc."
+                    value={formData.education}
+                    onChange={(e) => setFormData({ ...formData, education: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-bold text-gray-700 mb-1">Skills (comma separated)</label>
+                  <input
+                    type="text"
+                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all text-sm bg-gray-50/50"
+                    placeholder="React, Node.js, etc."
+                    value={formData.skills}
+                    onChange={(e) => setFormData({ ...formData, skills: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-bold text-gray-700 mb-1">Experience (Years)</label>
+                  <input
+                    type="number"
+                    min="0"
+                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all text-sm bg-gray-50/50"
+                    value={formData.experienceYears}
+                    onChange={(e) => setFormData({ ...formData, experienceYears: e.target.value })}
                   />
                 </div>
                 <button
@@ -147,8 +215,8 @@ const UserProfile = () => {
                     <label className="flex flex-col items-center justify-center p-8 border-2 border-dashed border-gray-200 rounded-2xl bg-white hover:bg-indigo-50/30 hover:border-indigo-200 transition-all cursor-pointer group">
                       <Upload className="w-8 h-8 text-gray-300 mb-2 group-hover:text-indigo-500 transition-colors" />
                       <span className="text-sm font-bold text-gray-400 group-hover:text-indigo-600 transition-colors">Click to upload resume</span>
-                      <span className="text-[10px] text-gray-400 mt-1 uppercase tracking-wider">PDF, DOC, DOCX up to 5MB</span>
-                      <input type="file" className="hidden" accept=".pdf,.doc,.docx" onChange={(e) => handleFileChange(e, 'resume')} />
+                      <span className="text-[10px] text-gray-400 mt-1 uppercase tracking-wider">PDF only, up to 5MB</span>
+                      <input type="file" className="hidden" accept=".pdf" onChange={(e) => handleFileChange(e, 'resume')} />
                     </label>
                   )}
                 </div>
@@ -158,12 +226,12 @@ const UserProfile = () => {
                     <div className="space-y-4">
                         <div className="flex items-center justify-between">
                             <span className="text-sm text-gray-500 font-medium">Profile Completion</span>
-                            <span className="text-sm font-bold text-indigo-600">80%</span>
+                            <span className="text-sm font-bold text-indigo-600">{completionPct()}%</span>
                         </div>
                         <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
-                            <div className="h-full bg-indigo-600 rounded-full" style={{ width: '80%' }}></div>
+                            <div className="h-full bg-indigo-600 rounded-full" style={{ width: `${completionPct()}%` }}></div>
                         </div>
-                        <p className="text-xs text-gray-400">Complete your profile to get 2x more visibility from recruiters.</p>
+                        <p className="text-xs text-gray-400">Complete your profile to 70% to start applying for jobs.</p>
                     </div>
                 </div>
               </div>

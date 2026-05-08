@@ -21,18 +21,24 @@ const Hero = () => {
               We provide a complete solution for job seekers and employers to find the best match for their needs. Browse thousands of jobs and apply with ease.
             </p>
             <div className="mt-8 sm:max-w-lg sm:mx-auto sm:text-center lg:text-left lg:mx-0">
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
                 <Link
-                  to="/signup?role=jobseeker"
-                  className="flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-xl text-white bg-indigo-600 hover:bg-indigo-700 md:py-4 md:text-lg md:px-10 shadow-lg shadow-indigo-100 transition-all hover:-translate-y-1"
+                  to="/login?role=jobseeker"
+                  className="flex items-center justify-center px-4 py-3 border border-transparent text-sm font-medium rounded-xl text-white bg-indigo-600 hover:bg-indigo-700 shadow-lg shadow-indigo-100 transition-all hover:-translate-y-1"
                 >
-                  Find a Job <ArrowRight className="ml-2 w-5 h-5" />
+                  Job Seeker Login
                 </Link>
                 <Link
-                  to="/signup?role=employer"
-                  className="flex items-center justify-center px-8 py-3 border border-gray-300 text-base font-medium rounded-xl text-indigo-600 bg-white hover:bg-gray-50 md:py-4 md:text-lg md:px-10 transition-all hover:-translate-y-1"
+                  to="/login?role=employer"
+                  className="flex items-center justify-center px-4 py-3 border border-gray-300 text-sm font-medium rounded-xl text-indigo-600 bg-white hover:bg-gray-50 transition-all hover:-translate-y-1"
                 >
-                  Hire Talent
+                  Recruiter Login
+                </Link>
+                <Link
+                  to="/signup"
+                  className="flex items-center justify-center px-4 py-3 border border-indigo-600 text-sm font-medium rounded-xl text-indigo-600 bg-white hover:bg-indigo-50 transition-all hover:-translate-y-1"
+                >
+                  Register
                 </Link>
               </div>
             </div>

@@ -5,8 +5,10 @@ import { API_PATHS } from '../../utils/apipaths';
 import { useAuth } from '../../context/AuthContext';
 import Header from '../LandingPage/components/Header';
 import toast from 'react-hot-toast';
-import { MapPin, Briefcase, DollarSign, Clock, Building2, ChevronLeft, Send, CheckCircle } from 'lucide-react';
+import { MapPin, Briefcase, DollarSign, Clock, Building2, ChevronLeft, Send, CheckCircle, ShieldCheck } from 'lucide-react';
 import moment from 'moment';
+
+import FaceAuth from '../../components/Auth/FaceAuth';
 
 const JobDetails = () => {
   const { jobId } = useParams();
@@ -15,6 +17,7 @@ const JobDetails = () => {
   const [job, setJob] = useState(null);
   const [loading, setLoading] = useState(true);
   const [applying, setApplying] = useState(false);
+  const [showFaceVerify, setShowFaceVerify] = useState(false);
 
   useEffect(() => {
     const fetchJob = async () => {
@@ -33,11 +36,52 @@ const JobDetails = () => {
     fetchJob();
   }, [jobId, user, navigate]);
 
-  const handleApply = async () => {
-    if (!user.resume) {
+  const calculateCompletionPct = () => {
+    const fields = [
+      Boolean(user?.name),
+      Boolean(user?.email),
+      Boolean(user?.phone),
+      Boolean(user?.avatar),
+      Boolean(user?.resume),
+      Array.isArray(user?.education) && user.education.length > 0,
+      Array.isArray(user?.skills) && user.skills.length > 0,
+      Number(user?.experienceYears || 0) > 0,
+      Array.isArray(user?.faceEmbeddings) && user.faceEmbeddings.length > 0,
+    ];
+    return Math.round((fields.filter(Boolean).length / fields.length) * 100);
+  };
+
+  const handleApplyClick = () => {
+    if (user?.verificationStatus === 'fake' || user?.accountStatus === 'suspended') {
+      toast.error('Your account is blocked. You cannot apply for jobs.');
+      return;
+    }
+    if (user?.verificationStatus === 'suspicious') {
+      toast.error('Your profile is under review. You cannot apply for jobs yet.');
+      return;
+    }
+    
+    const pct = calculateCompletionPct();
+    if (pct < 70) {
+        toast.error(`Profile incomplete (${pct}%). Please reach 70% completeness to apply.`);
+        return;
+    }
+
+    if (!user?.resume) {
       toast.error('Please upload your resume in your profile before applying');
       return;
     }
+    if (user?.role === 'jobseeker' && (!user?.faceEnrollment || user?.faceEnrollment?.imageCount < 1)) {
+        toast.error('Face enrollment is required before applying for jobs');
+        return;
+    }
+
+    // Open Face Verification before applying
+    setShowFaceVerify(true);
+  };
+
+  const submitApplication = async () => {
+    setShowFaceVerify(false);
     setApplying(true);
     try {
       await axiosInstance.post(API_PATHS.APPLICATIONS.APPLY(jobId));
@@ -94,7 +138,7 @@ const JobDetails = () => {
                   </div>
                 ) : (
                   <button
-                    onClick={handleApply}
+                    onClick={handleApplyClick}
                     disabled={applying || job.isClosed}
                     className="flex items-center justify-center space-x-2 bg-indigo-600 text-white px-8 py-4 rounded-xl font-bold hover:bg-indigo-700 shadow-lg shadow-indigo-100 transition-all active:scale-95 disabled:opacity-50"
                   >
@@ -104,6 +148,14 @@ const JobDetails = () => {
                 )}
               </div>
             </div>
+
+            {showFaceVerify && (
+                <FaceAuth 
+                    mode="verify" 
+                    onSuccess={submitApplication} 
+                    onClose={() => setShowFaceVerify(false)} 
+                />
+            )}
 
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mt-10">
               <div className="bg-gray-50 p-4 rounded-2xl border border-gray-100/50">
@@ -149,15 +201,6 @@ const JobDetails = () => {
                 {job.company?.companyDescription || 'No description available for this company.'}
               </p>
             </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-export default JobDetails;
-           </div>
           </div>
         </div>
       </div>

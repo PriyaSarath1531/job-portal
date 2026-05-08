@@ -1,15 +1,18 @@
-// This file is a copy of authController.js from the controller folder
-// Add your route logic here
 const express = require('express');
-const {register, login, getMe, faceLogin, registerFace} = require("../controller/authController");
+const {register, login, getMe, faceLogin, registerFace, verifyFace, checkUserStatus} = require("../controller/authController");
+const {sendOtp, verifyOtp} = require("../controller/otpController");
 
 const {protect} = require("../middlewares/authMiddleware");
 const upload = require("../middlewares/uploadMiddleware");
 const router = express.Router();
 router.post('/register', register);
 router.post('/login', login);
+router.post('/check-status', checkUserStatus);
 router.post('/face-login', faceLogin);
 router.post('/register-face', protect, registerFace);
+router.post('/verify-face', protect, verifyFace);
+router.post('/send-otp', sendOtp);
+router.post('/verify-otp', verifyOtp);
 router.get('/me', protect, getMe);  
 
 router.post("/upload-image", upload.single("image"), (req, res) => {

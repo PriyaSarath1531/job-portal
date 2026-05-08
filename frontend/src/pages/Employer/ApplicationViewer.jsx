@@ -4,7 +4,7 @@ import axiosInstance from '../../utils/axiosinstance';
 import { API_PATHS } from '../../utils/apipaths';
 import Header from '../LandingPage/components/Header';
 import toast from 'react-hot-toast';
-import { User, Mail, FileText, CheckCircle, XCircle, Clock, ExternalLink } from 'lucide-react';
+import { User, Mail, FileText, CheckCircle, XCircle, Clock, ExternalLink, ShieldCheck, Users } from 'lucide-react';
 
 const ApplicationViewer = () => {
   const { jobId } = useParams();
@@ -72,19 +72,35 @@ const ApplicationViewer = () => {
                   <div>
                     <h3 className="text-lg font-bold text-gray-900 flex items-center">
                       {app.applicant?.name}
-                      {(app.applicant?.isVerified || app.applicant?.trustScore > 80) && (
-                        <ShieldCheck className="w-4 h-4 text-emerald-500 ml-1.5" title="Verified Candidate" />
+                      {app.applicant?.verificationStatus === 'genuine' ? (
+                        <ShieldCheck className="w-5 h-5 text-emerald-500 ml-2" title="Face Verified & Genuine" />
+                      ) : (
+                        <ShieldCheck className="w-5 h-5 text-amber-500 ml-2 opacity-50" title="Under Review" />
                       )}
                     </h3>
-                    <div className="flex items-center text-sm text-gray-500 font-medium">
-                      <Mail className="w-4 h-4 mr-1.5 text-gray-400" />
-                      {app.applicant?.email}
+                    <div className="flex flex-col space-y-1 mt-1">
+                      <div className="flex items-center text-sm text-gray-500 font-medium">
+                        <Mail className="w-4 h-4 mr-1.5 text-gray-400" />
+                        {app.applicant?.email}
+                      </div>
+                      <div className="flex items-center space-x-3 mt-1">
+                        <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-full border ${
+                          app.applicant?.verificationStatus === 'genuine' 
+                          ? 'bg-emerald-50 border-emerald-100 text-emerald-600' 
+                          : 'bg-amber-50 border-amber-100 text-amber-600'
+                        }`}>
+                          {app.applicant?.verificationStatus === 'genuine' ? 'Face Verified' : 'Under Review'}
+                        </span>
+                        <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full bg-indigo-50 border border-indigo-100 text-indigo-600">
+                          Trust Score: {app.applicant?.trustScore}%
+                        </span>
+                      </div>
                     </div>
                   </div>
                 </div>
 
                 <div className="flex flex-wrap items-center gap-4">
-                  <div className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${statusColors[app.status]}`}>
+                  <div className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${statusColors[app.status] || 'bg-gray-100 text-gray-700'}`}>
                     {app.status}
                   </div>
                   
@@ -134,14 +150,6 @@ const ApplicationViewer = () => {
             <h3 className="text-xl font-bold text-gray-900">No applicants yet</h3>
             <p className="text-gray-500 mt-2">Check back later for new applications</p>
           </div>
-        )}
-      </div>
-    </div>
-  );
-};
-
-export default ApplicationViewer;
- </div>
         )}
       </div>
     </div>

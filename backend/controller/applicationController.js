@@ -71,8 +71,16 @@ exports.getApplicantsForJob = async (req, res) => {
         }
         const applications = await Application.find({ job: req.params.jobId })
             .populate('job', "title location category type")
-            .populate("applicant", "name email avatar resume isVerified trustScore");
-        res.json(applications);
+            .populate("applicant", "name email avatar resume isVerified trustScore verificationStatus accountStatus verificationReasons");
+
+        // Recruiters/employers should only see genuine profiles
+        const filtered = applications.filter((a) => {
+            const u = a.applicant;
+            if (!u) return false;
+            return u.verificationStatus === "genuine" && u.accountStatus === "active";
+        });
+
+        res.json(filtered);
     }
     catch (err) {
         res.status(500).json({ message: err.message });
@@ -83,7 +91,7 @@ exports.getApplicationById = async (req, res) => {
     try {
         const app = await Application.findById(req.params.id)
             .populate('job', "title company")
-            .populate("applicant", "name email avatar resume isVerified trustScore");
+            .populate("applicant", "name email avatar resume isVerified trustScore verificationStatus accountStatus verificationReasons");
             
         if (!app) {
             return res.status(404).json({ message: "Application not found", id: req.params.id });
@@ -94,6 +102,14 @@ exports.getApplicationById = async (req, res) => {
                         
         if (!isOwner) {
             return res.status(403).json({ message: "Not authorized to view this application" });
+        }
+
+        // Employer visibility restriction
+        if (req.user.role === "employer") {
+            const u = app.applicant;
+            if (!u || u.verificationStatus !== "genuine" || u.accountStatus !== "active") {
+                return res.status(404).json({ message: "Application not found" });
+            }
         }
         res.json(app);
     }
